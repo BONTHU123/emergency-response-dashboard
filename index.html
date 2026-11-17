@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency Response Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#0b2036;--blue:#1769aa;--bg:#eef5f9;--text:#173f67;--muted:#70869a;--line:#dce7ef;--white:#fff}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text)}
+.sidebar{width:230px;height:100vh;position:fixed;left:0;top:0;background:var(--navy);color:white;padding:20px 12px;overflow-y:auto;z-index:20}
+.logo{text-align:center;margin-bottom:25px}.logo-icon{font-size:38px}.logo h2{font-size:18px;margin-top:5px}.logo p{font-size:12px;color:#a9c4dc;margin-top:5px}
+.menu-title{color:#7896b0;font-size:11px;margin:20px 12px 8px;text-transform:uppercase}
+.nav-item{padding:11px 13px;border-radius:8px;margin-bottom:5px;color:#dceaf5;cursor:pointer;font-size:14px}.nav-item:hover,.nav-item.active{background:var(--blue);color:white}.logout{background:#b42318}
+.main{margin-left:230px;min-height:100vh}.header{height:70px;background:white;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;padding:0 25px;position:sticky;top:0;z-index:10;gap:15px}.header h1{font-size:22px}.system-status{background:#e7f8ef;color:#087443;padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap}
+.content{padding:25px}.page{display:none}.page.active{display:block}.page-title{margin-bottom:20px}.page-title h2{font-size:25px}.page-title p{color:var(--muted);margin-top:5px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-bottom:25px}.card,.form-card,.table-card,.alert-box,.map-card,.report-card,.resource-card{background:white;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.035)}
+.card{padding:20px}.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.card-icon{width:45px;height:45px;border-radius:10px;background:#e8f2fb;display:flex;align-items:center;justify-content:center;font-size:23px}.card h3{margin-top:15px;font-size:30px}.card p{color:var(--muted);font-size:13px}
+.form-card{padding:22px;margin-bottom:22px}.form-card h3{font-size:20px;margin-bottom:20px}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.form-group{display:flex;flex-direction:column;min-width:0}.form-group.full{grid-column:1/-1}.form-group label{font-size:13px;font-weight:bold;color:#315676;margin-bottom:7px}.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 12px;border:1px solid #cbd9e4;border-radius:7px;background:#fbfdff;color:#294b68;font-size:14px;outline:none}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--blue)}.form-group textarea{min-height:90px;resize:vertical}.form-actions{margin-top:18px}
+.btn{border:none;border-radius:7px;padding:10px 15px;cursor:pointer;font-size:13px;font-weight:bold;display:inline-block}.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:#12588e}.btn-danger{background:#c62828;color:white}.btn-success{background:#138a57;color:white}.btn-warning{background:#e79b19;color:white}.btn-small{padding:6px 9px;font-size:12px}.btn:disabled{opacity:.5;cursor:not-allowed}
+.table-card{overflow:hidden;margin-bottom:25px}.table-header{padding:17px 20px;border-bottom:1px solid #e2ebf2;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.table-header h3{font-size:18px}.table-wrapper{overflow-x:auto}table{width:100%;border-collapse:collapse}th{background:#f1f6fa;color:#315676;text-align:left;font-size:12px;padding:13px;white-space:nowrap}td{padding:13px;border-top:1px solid #edf2f5;font-size:13px;color:#405f77;vertical-align:middle}tr:hover td{background:#f9fcfe}.search-box{max-width:100%;width:230px;padding:9px 12px;border:1px solid #cbd9e4;border-radius:7px}
+.badge{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold;display:inline-block;white-space:nowrap}.badge-active{background:#ffe5e5;color:#b42318}.badge-assigned,.badge-mission{background:#fff1d6;color:#9a5a00}.badge-resolved,.badge-available{background:#dff7ea;color:#087443}.badge-busy,.badge-off{background:#ffe5e5;color:#b42318}.team-info{background:#eef7ff;border:1px solid #c9e1f4;border-radius:8px;padding:12px;margin-top:8px;color:var(--blue);font-size:13px}.team-list span{display:inline-block;background:white;border:1px solid #cbd9e4;padding:6px 9px;border-radius:5px;margin:3px}
+.resource-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:15px;margin-bottom:25px}.resource-card{padding:20px;text-align:center}.resource-icon{font-size:40px}.resource-card h3{margin-top:8px;font-size:15px}.resource-quantity{font-size:28px;font-weight:bold;margin:10px 0;color:var(--blue)}.resource-buttons{display:flex;justify-content:center;gap:5px;flex-wrap:wrap}
+.alert-box{padding:20px;margin-bottom:25px}.alert-box h3{color:#b42318;margin-bottom:15px}.alert-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}.alert-message{display:none;margin-top:15px;padding:12px;border-radius:8px;background:#fff3cd;color:#856404;overflow-wrap:anywhere}.alert-message.show{display:block}
+.map-card{overflow:hidden;margin-bottom:25px}.map-header{padding:17px 20px;display:flex;justify-content:space-between;align-items:center;gap:10px}.map-frame{width:100%;height:430px;border:0}.report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:25px}.report-card{padding:22px}.report-card h3{margin-bottom:8px}.report-card p{color:#6b8193;font-size:13px;margin-bottom:15px}.empty{text-align:center;padding:30px;color:#8297a8}.inline-note{font-size:12px;color:var(--muted);margin-top:8px}.error-note{background:#fff0f0;color:#9b1c1c;border:1px solid #f0caca;padding:12px;border-radius:8px;margin-bottom:15px;display:none}.error-note.show{display:block}
+@media(max-width:1100px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.resource-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.alert-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:750px){.sidebar{width:70px;padding:15px 8px}.logo h2,.logo p,.menu-title,.nav-item span{display:none}.nav-item{text-align:center;font-size:20px;padding:11px 4px}.main{margin-left:70px}.cards,.form-grid,.resource-grid,.report-grid,.alert-grid{grid-template-columns:1fr}.content{padding:15px}.header{padding:0 15px}.header h1{font-size:16px}.system-status{font-size:11px;padding:7px}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="logo"><div class="logo-icon">🚨</div><h2>Emergency Team</h2><p>Response Dashboard</p></div>
+  <div class="menu-title">Main Menu</div>
+  <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard',this)">📊 <span>Dashboard</span></div>
+  <div class="nav-item" data-page="incidents" onclick="showPage('incidents',this)">🚨 <span>Incidents</span></div>
+  <div class="nav-item" data-page="team" onclick="showPage('team',this)">👥 <span>Response Team</span></div>
+  <div class="nav-item" data-page="resources" onclick="showPage('resources',this)">🚑 <span>Resources</span></div>
+  <div class="nav-item" data-page="victims" onclick="showPage('victims',this)">🧑 <span>Victims</span></div>
+  <div class="nav-item" data-page="map" onclick="showPage('map',this)">🗺️ <span>Live Map</span></div>
+  <div class="nav-item" data-page="reports" onclick="showPage('reports',this)">📊 <span>Reports & History</span></div>
+  <div class="nav-item" data-page="alerts" onclick="showPage('alerts',this)">🔔 <span>Emergency Alert</span></div>
+  <div class="menu-title">System</div>
+  <div class="nav-item" data-page="settings" onclick="showPage('settings',this)">⚙️ <span>Settings</span></div>
+  <div class="nav-item logout" onclick="logout()">🚪 <span>Logout</span></div>
+</aside>
+<main class="main">
+<header class="header"><h1>Emergency Response Dashboard</h1><div class="system-status">● System Online</div></header>
+<div class="content">
+<div id="apiError" class="error-note"></div>
+
+<section id="dashboard" class="page active">
+  <div class="page-title"><h2>Dashboard</h2><p>Emergency response operations overview</p></div>
+  <div class="cards">
+    <div class="card"><div class="card-top"><div><p>Active Emergencies</p><h3 id="activeIncidents">0</h3></div><div class="card-icon">🚨</div></div></div>
+    <div class="card"><div class="card-top"><div><p>Available Responders</p><h3 id="availableResponders">0</h3></div><div class="card-icon">👥</div></div></div>
+    <div class="card"><div class="card-top"><div><p>Ambulances</p><h3 id="ambulanceCount">0</h3></div><div class="card-icon">🚑</div></div></div>
+    <div class="card"><div class="card-top"><div><p>People Rescued</p><h3 id="peopleRescued">0</h3></div><div class="card-icon">🧑‍🚒</div></div></div>
+  </div>
+  <div class="alert-box"><h3>🚨 Quick Emergency Alert</h3><div class="alert-grid">
+    <div class="form-group"><label for="quickAlertType">Emergency Type</label><select id="quickAlertType"><option>Fire</option><option>Road Accident</option><option>Flood</option><option>Medical Emergency</option><option>Building Collapse</option><option>Other</option></select></div>
+    <div class="form-group"><label for="quickAlertLocation">Location</label><input id="quickAlertLocation" placeholder="Enter emergency location"></div>
+    <div class="form-group"><label for="quickAlertPriority">Priority</label><select id="quickAlertPriority"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+    <button class="btn btn-danger" type="button" onclick="sendQuickAlert()">🚨 Send Alert</button></div><div id="quickAlertMessage" class="alert-message"></div></div>
+  <div class="table-card"><div class="table-header"><h3>Recent Incidents</h3><button class="btn btn-primary" onclick="showPage('incidents')">+ Add Incident</button></div><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Type</th><th>Incident</th><th>Location</th><th>Priority</th><th>Status</th><th>Response Team</th></tr></thead><tbody id="dashboardIncidents"></tbody></table></div></div>
+</section>
+
+<section id="incidents" class="page">
+  <div class="page-title"><h2>🚨 Incident Management</h2><p>Create and manage emergency incidents.</p></div>
+  <div class="form-card"><h3>➕ Add New Incident</h3><form id="incidentForm"><div class="form-grid">
+    <div class="form-group"><label for="incidentType">Incident Type</label><select id="incidentType" required><option>Fire</option><option>Road Accident</option><option>Flood</option><option>Medical Emergency</option><option>Building Collapse</option><option>Other</option></select></div>
+    <div class="form-group"><label for="incidentTitle">Incident Title</label><input id="incidentTitle" placeholder="Example: Major Fire Accident" required></div>
+    <div class="form-group"><label for="incidentLocation">Location</label><input id="incidentLocation" placeholder="Enter location" required></div>
+    <div class="form-group"><label for="incidentPriority">Priority</label><select id="incidentPriority"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></div>
+    <div class="form-group"><label for="incidentStatus">Status</label><select id="incidentStatus"><option>Active</option><option>Assigned</option><option>Resolved</option></select></div>
+    <div class="form-group"><label for="incidentResponseTeam">Response Team</label><select id="incidentResponseTeam"><option value="">No teams loaded</option></select></div>
+    <div class="form-group full"><div id="responseTeamInfo" class="team-info">Available response teams will appear here.</div></div>
+    <div class="form-group full"><label for="incidentDescription">Description</label><textarea id="incidentDescription" placeholder="Describe the emergency..."></textarea></div>
+  </div><div class="form-actions"><button class="btn btn-primary" type="submit">🚨 Add Incident</button></div></form></div>
+  <div class="table-card"><div class="table-header"><h3>All Incidents</h3><input id="incidentSearch" class="search-box" placeholder="Search incidents..." oninput="filterTable('incidentSearch','incidentTable')"></div><div class="table-wrapper"><table id="incidentTable"><thead><tr><th>ID</th><th>Type</th><th>Title</th><th>Location</th><th>Priority</th><th>Status</th><th>Response Team</th><th>Action</th></tr></thead><tbody id="incidentBody"></tbody></table></div></div>
+</section>
+
+<section id="team" class="page">
+  <div class="page-title"><h2>👥 Response Team</h2><p>Add and manage emergency response personnel.</p></div>
+  <div class="form-card"><h3>➕ Add Response Team Member</h3><form id="teamForm"><div class="form-grid">
+    <div class="form-group"><label for="teamName">Name</label><input id="teamName" placeholder="Enter name" required></div>
+    <div class="form-group"><label for="teamRole">Role</label><input id="teamRole" placeholder="Example: Rescue Officer" required></div>
+    <div class="form-group"><label for="teamPhone">Phone</label><input id="teamPhone" type="tel" placeholder="Enter phone number"></div>
+    <div class="form-group"><label for="teamStatus">Status</label><select id="teamStatus" required><option value="Available">Available</option><option value="On Mission">On Mission</option><option value="Off Duty">Off Duty</option></select></div>
+  </div><div class="form-actions"><button class="btn btn-primary" type="submit">➕ Add Team Member</button></div></form></div>
+  <div class="table-card"><div class="table-header"><h3>Response Team Members</h3><input id="teamSearch" class="search-box" placeholder="Search team..." oninput="filterTable('teamSearch','teamTable')"></div><div class="table-wrapper"><table id="teamTable"><thead><tr><th>ID</th><th>Name</th><th>Role</th><th>Phone</th><th>Status</th><th>Action</th></tr></thead><tbody id="teamTableBody"></tbody></table></div></div>
+</section>
+
+<section id="resources" class="page">
+  <div class="page-title"><h2>🚑 Resource Management</h2><p>Add, increase, decrease and delete emergency resources.</p></div>
+  <div class="form-card"><h3>➕ Add New Resource</h3><form id="resourceForm"><div class="form-grid">
+    <div class="form-group"><label for="resourceName">Resource Name</label><input id="resourceName" placeholder="Example: Ambulance" required></div>
+    <div class="form-group"><label for="resourceQuantity">Quantity</label><input id="resourceQuantity" type="number" min="0" value="1" required></div>
+  </div><div class="form-actions"><button class="btn btn-primary" type="submit">➕ Add Resource</button></div></form></div>
+  <div class="resource-grid" id="resourceGrid"></div>
+  <div class="table-card"><div class="table-header"><h3>All Resources</h3></div><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Resource</th><th>Quantity</th><th>Actions</th></tr></thead><tbody id="resourceBody"></tbody></table></div></div>
+</section>
+
+<section id="victims" class="page">
+  <div class="page-title"><h2>🧑 Victim Management</h2><p>Register and manage emergency victims.</p></div>
+  <div class="form-card"><h3>➕ Register Victim</h3><form id="victimForm"><div class="form-grid">
+    <div class="form-group"><label for="victimName">Victim Name</label><input id="victimName" placeholder="Enter victim name" required></div>
+    <div class="form-group"><label for="victimLocation">Location</label><input id="victimLocation" placeholder="Victim location" required></div>
+    <div class="form-group"><label for="victimCondition">Condition</label><select id="victimCondition"><option>Stable</option><option>Injured</option><option>Critical</option><option>Unconscious</option></select></div>
+    <div class="form-group"><label for="victimRescueStatus">Rescue Status</label><select id="victimRescueStatus"><option>Pending</option><option>Rescued</option><option>Safe</option></select></div>
+  </div><div class="form-actions"><button class="btn btn-primary" type="submit">🧑 Register Victim</button></div></form></div>
+  <div class="table-card"><div class="table-header"><h3>Registered Victims</h3><input id="victimSearch" class="search-box" placeholder="Search victims..." oninput="filterTable('victimSearch','victimTable')"></div><div class="table-wrapper"><table id="victimTable"><thead><tr><th>ID</th><th>Name</th><th>Location</th><th>Condition</th><th>Rescue Status</th><th>Action</th></tr></thead><tbody id="victimBody"></tbody></table></div></div>
+</section>
+
+<section id="map" class="page">
+  <div class="page-title"><h2>🗺️ Emergency Location Map</h2><p>View emergency locations.</p></div>
+  <div class="map-card"><div class="map-header"><h3>📍 Map of Vijayawada region</h3><button class="btn btn-primary" onclick="openGoogleMaps()">Open Google Maps</button></div><iframe class="map-frame" title="OpenStreetMap" src="https://www.openstreetmap.org/export/embed.html?bbox=80.55%2C16.45%2C80.75%2C16.60&layer=mapnik" loading="lazy"></iframe></div>
+  <div class="table-card"><div class="table-header"><h3>Incident Locations</h3></div><div class="table-wrapper"><table><thead><tr><th>Incident</th><th>Location</th><th>Priority</th><th>Response Team</th><th>Map</th></tr></thead><tbody id="mapIncidentBody"></tbody></table></div></div>
+</section>
+
+<section id="reports" class="page">
+  <div class="page-title"><h2>📊 Reports & History</h2><p>Review records and export reports.</p></div>
+  <div class="report-grid">
+    <div class="report-card"><h3>🚨 Incident Report</h3><p>Download incident records.</p><button class="btn btn-primary" onclick="exportIncidentsCSV()">📥 Export Incidents</button></div>
+    <div class="report-card"><h3>👥 Team Report</h3><p>Download response team records.</p><button class="btn btn-primary" onclick="exportTeamCSV()">📥 Export Team</button></div>
+    <div class="report-card"><h3>🧑 Victim Report</h3><p>Download victim records.</p><button class="btn btn-primary" onclick="exportVictimsCSV()">📥 Export Victims</button></div>
+  </div>
+  <div class="table-card"><div class="table-header"><h3>📜 Activity History</h3></div><div class="table-wrapper"><table><thead><tr><th>ID</th><th>Activity</th><th>Date / Time</th></tr></thead><tbody id="historyBody"></tbody></table></div></div>
+</section>
+
+<section id="alerts" class="page">
+  <div class="page-title"><h2>🔔 Emergency Alert</h2><p>Create an emergency alert.</p></div>
+  <div class="form-card"><h3>🚨 Create Emergency Alert</h3><form id="alertForm"><div class="form-grid">
+    <div class="form-group"><label for="alertType">Emergency Type</label><select id="alertType"><option>Fire</option><option>Road Accident</option><option>Flood</option><option>Medical Emergency</option><option>Building Collapse</option><option>Other</option></select></div>
+    <div class="form-group"><label for="alertPriority">Priority</label><select id="alertPriority"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+    <div class="form-group full"><label for="alertLocation">Location</label><input id="alertLocation" placeholder="Enter emergency location" required></div>
+    <div class="form-group full"><label for="alertText">Alert Message</label><textarea id="alertText" placeholder="Enter emergency message..." required></textarea></div>
+  </div><div class="form-actions"><button class="btn btn-danger" type="submit">🚨 Send Emergency Alert</button></div></form><div id="alertResult" class="alert-message"></div><p class="inline-note">Alerts created here are shown on this page; persistent alert storage requires a dedicated backend endpoint.</p></div>
+</section>
+
+<section id="settings" class="page">
+  <div class="page-title"><h2>⚙️ Settings</h2><p>System information.</p></div>
+  <div class="form-card"><h3>System Information</h3><p style="margin:10px 0"><b>System:</b> Emergency Response Dashboard</p><p style="margin:10px 0"><b>Database:</b> emergency_dashboard</p><p style="margin:10px 0"><b>Server:</b> <span id="serverState">Checking…</span></p><p><b>Version:</b> 1.1</p></div>
+</section>
+</div>
+</main>
+
+<script>
+"use strict";
+// Use PHP on the local XAMPP URL and Express APIs on Vercel/other hosts.
+const IS_LOCAL_PHP=(["localhost","127.0.0.1"].includes(location.hostname)&&["","80"].includes(location.port));
+const API_ROOT=IS_LOCAL_PHP?"":"/api";
+const SESSION_API=IS_LOCAL_PHP?"session.php":API_ROOT+"/session";
+const INCIDENT_API=IS_LOCAL_PHP?"incidents.php":API_ROOT+"/incidents";
+const TEAM_API=IS_LOCAL_PHP?"response_team.php":API_ROOT+"/team";
+const RESOURCE_API=IS_LOCAL_PHP?"resources.php":API_ROOT+"/resources";
+const VICTIM_API=IS_LOCAL_PHP?"victims.php":API_ROOT+"/victims";
+const HISTORY_API=IS_LOCAL_PHP?"activity_history.php":API_ROOT+"/history";
+const ALERT_API=IS_LOCAL_PHP?"alerts.php":API_ROOT+"/alerts";
+let incidents=[],team=[],resources=[],victims=[],history=[];
+
+function escapeHTML(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function showPage(id,element){
+  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));
+  document.querySelectorAll(".nav-item[data-page]").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+  if(element && element.dataset.page) element.classList.add("active");
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function statusBadge(status){
+  const s=String(status||"Unknown"),v=s.toLowerCase();
+  let cls="";
+  if(v==="active")cls="badge-active";
+  else if(v==="assigned")cls="badge-assigned";
+  else if(["resolved","completed","safe","rescued"].includes(v))cls="badge-resolved";
+  else if(v==="available")cls="badge-available";
+  else if(v==="on mission"||v==="busy")cls="badge-mission";
+  else if(["off duty","unavailable"].includes(v))cls="badge-off";
+  return `<span class="badge ${cls}">${escapeHTML(s)}</span>`;
+}
+function normalizeArray(payload){
+  if(Array.isArray(payload))return payload;
+  for(const key of ["data","records","results","items"])if(Array.isArray(payload?.[key]))return payload[key];
+  return [];
+}
+async function getData(url){
+  const response=await fetch(url,{headers:{"Accept":"application/json"},cache:"no-store"});
+  const raw=await response.text();
+  let payload;
+  try{payload=JSON.parse(raw);}catch{throw new Error(url+" did not return JSON (HTTP "+response.status+"). Check that Apache/PHP is running and inspect the PHP/Apache error log.");}
+  if(!response.ok||payload?.success===false)throw new Error(payload?.message||("Request failed: "+url));
+  return normalizeArray(payload);
+}
+async function postData(url,data){
+  const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  const raw=await response.text();let result;
+  try{result=JSON.parse(raw);}catch{throw new Error(url+" returned non-JSON (HTTP "+response.status+"). Check the PHP/Apache error log.");}
+  if(!response.ok||result?.success===false)throw new Error(result?.message||"Request failed.");
+  return result;
+}
+async function deleteData(url,id){
+  const response=await fetch(url+"?id="+encodeURIComponent(id),{method:"DELETE",headers:{"Accept":"application/json"}});
+  const raw=await response.text();let result;
+  try{result=JSON.parse(raw);}catch{throw new Error(url+" returned non-JSON (HTTP "+response.status+"). Check the PHP/Apache error log.");}
+  if(!response.ok||result?.success===false)throw new Error(result?.message||"Delete failed.");
+  return result;
+}
+function showError(message){const box=document.getElementById("apiError");box.textContent=message;box.classList.add("show");}
+function clearError(){const box=document.getElementById("apiError");box.textContent="";box.classList.remove("show");}
+async function loadAllData(){
+  clearError();
+  const endpoints=[INCIDENT_API,TEAM_API,RESOURCE_API,VICTIM_API,HISTORY_API];
+  const results=await Promise.allSettled(endpoints.map(getData));
+  const errors=[];
+  const assign=[v=>incidents=v,v=>team=v,v=>resources=v,v=>victims=v,v=>history=v];
+  results.forEach((r,i)=>{if(r.status==="fulfilled")assign[i](r.value);else{assign[i]([]);errors.push(endpoints[i]+": "+r.reason.message);console.error(endpoints[i],r.reason);}});
+  renderAll();populateIncidentTeams();
+  document.getElementById("serverState").textContent=errors.length?"Some API endpoints failed":"Connected to API";
+  if(errors.length)showError("Some dashboard data could not load: "+errors.join(" | "));
+}
+function renderAll(){renderDashboard();renderIncidents();renderTeam();renderResources();renderVictims();renderMapIncidents();renderHistory();}
+function val(obj,...keys){for(const k of keys){if(obj?.[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k];}return "";}
+function renderDashboard(){
+  document.getElementById("activeIncidents").textContent=incidents.filter(i=>!["resolved","closed","completed"].includes(String(i.status||"").toLowerCase())).length;
+  document.getElementById("availableResponders").textContent=team.filter(t=>String(t.status||"").toLowerCase()==="available").length;
+  document.getElementById("ambulanceCount").textContent=resources.reduce((sum,r)=>sum+(String(val(r,"name","resource_name")).toLowerCase().includes("ambulance")?Number(r.quantity||0):0),0);
+  document.getElementById("peopleRescued").textContent=victims.filter(v=>["rescued","safe","completed"].includes(String(val(v,"rescue_status","status")).toLowerCase())).length;
+  const body=document.getElementById("dashboardIncidents");
+  body.innerHTML=incidents.slice(0,5).map(i=>`<tr><td>${escapeHTML(val(i,"id","incident_id")||"-")}</td><td>${escapeHTML(val(i,"incident_type","type")||"-")}</td><td>${escapeHTML(val(i,"title","incident_title","name")||"-")}</td><td>${escapeHTML(i.location||"-")}</td><td>${escapeHTML(i.priority||"-")}</td><td>${statusBadge(i.status)}</td><td>${escapeHTML(val(i,"response_team","assigned_team","team","responder")||"Not Assigned")}</td></tr>`).join("")||'<tr><td colspan="7" class="empty">No incidents found.</td></tr>';
+}
+function renderIncidents(){
+  const body=document.getElementById("incidentBody");
+  body.innerHTML=incidents.map(i=>{const id=val(i,"id","incident_id");return `<tr><td>${escapeHTML(id)}</td><td>${escapeHTML(val(i,"incident_type","type")||"-")}</td><td>${escapeHTML(val(i,"title","incident_title","name")||"-")}</td><td><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(i.location||"")}" target="_blank" rel="noopener">${escapeHTML(i.location||"-")}</a></td><td>${escapeHTML(i.priority||"-")}</td><td>${statusBadge(i.status)}</td><td>${escapeHTML(val(i,"response_team","assigned_team","team","responder")||"Not Assigned")}</td><td><button class="btn btn-danger btn-small" onclick="deleteIncident('${escapeHTML(id)}')">Delete</button></td></tr>`;}).join("")||'<tr><td colspan="8" class="empty">No incidents found.</td></tr>';
+}
+function renderTeam(){
+  const body=document.getElementById("teamTableBody");
+  body.innerHTML=team.map(t=>{const id=val(t,"id","team_id","member_id");return `<tr><td>${escapeHTML(id)}</td><td>${escapeHTML(val(t,"name","member_name")||"-")}</td><td>${escapeHTML(val(t,"role","position")||"-")}</td><td>${escapeHTML(val(t,"phone","mobile")||"-")}</td><td>${statusBadge(t.status)}</td><td><button class="btn btn-danger btn-small" onclick="deleteTeamMember('${escapeHTML(id)}')">Delete</button></td></tr>`;}).join("")||'<tr><td colspan="6" class="empty">No response team members found.</td></tr>';
+}
+function populateIncidentTeams(){
+  const select=document.getElementById("incidentResponseTeam"),previous=select.value;
+  select.innerHTML="";
+  if(!team.length){select.add(new Option("No teams available",""));document.getElementById("responseTeamInfo").textContent="Add response team members to assign them to incidents.";return;}
+  select.add(new Option("Select a response team",""));
+  team.forEach(t=>{const name=val(t,"name","member_name");if(name)select.add(new Option(name+" ("+(t.status||"Unknown")+")",name));});
+  if([...select.options].some(o=>o.value===previous))select.value=previous;
+  document.getElementById("responseTeamInfo").innerHTML="<b>Teams loaded from database:</b><div class='team-list'>"+team.map(t=>`<span>${escapeHTML(t.name||"Unnamed")} — ${escapeHTML(t.status||"Unknown")}</span>`).join("")+"</div>";
+}
+function resourceIcon(name){const n=String(name||"").toLowerCase();if(n.includes("ambulance"))return"🚑";if(n.includes("medical"))return"🩺";if(n.includes("fire"))return"🚒";if(n.includes("water"))return"💧";if(n.includes("rescue"))return"🛟";if(n.includes("helicopter"))return"🚁";return"📦";}
+function renderResources(){
+  const grid=document.getElementById("resourceGrid"),body=document.getElementById("resourceBody");
+  grid.innerHTML=resources.map(r=>{const id=val(r,"id","resource_id"),name=val(r,"name","resource_name")||"Resource",q=Number(r.quantity||0);return `<div class="resource-card"><div class="resource-icon">${resourceIcon(name)}</div><h3>${escapeHTML(name)}</h3><div class="resource-quantity">${q}</div><div class="resource-buttons"><button class="btn btn-success btn-small" onclick="changeResource('${escapeHTML(id)}',${q+1})">+</button><button class="btn btn-warning btn-small" onclick="changeResource('${escapeHTML(id)}',${Math.max(0,q-1)})">−</button><button class="btn btn-danger btn-small" onclick="deleteResource('${escapeHTML(id)}')">Delete</button></div></div>`;}).join("")||'<div class="resource-card">No resources found.</div>';
+  body.innerHTML=resources.map(r=>{const id=val(r,"id","resource_id"),name=val(r,"name","resource_name")||"Resource",q=Number(r.quantity||0);return `<tr><td>${escapeHTML(id)}</td><td>${resourceIcon(name)} ${escapeHTML(name)}</td><td><b>${q}</b></td><td><button class="btn btn-success btn-small" onclick="changeResource('${escapeHTML(id)}',${q+1})">+</button> <button class="btn btn-warning btn-small" onclick="changeResource('${escapeHTML(id)}',${Math.max(0,q-1)})">−</button> <button class="btn btn-danger btn-small" onclick="deleteResource('${escapeHTML(id)}')">Delete</button></td></tr>`;}).join("")||'<tr><td colspan="4" class="empty">No resources found.</td></tr>';
+}
+function renderVictims(){
+  const body=document.getElementById("victimBody");
+  body.innerHTML=victims.map(v=>{const id=val(v,"id","victim_id"),rescue=val(v,"rescue_status","status")||"Pending";return `<tr><td>${escapeHTML(id)}</td><td>${escapeHTML(val(v,"name","victim_name")||"-")}</td><td>${escapeHTML(v.location||"-")}</td><td>${escapeHTML(val(v,"condition","condition_status","victim_condition")||"-")}</td><td>${statusBadge(rescue)}</td><td><button class="btn btn-danger btn-small" onclick="deleteVictim('${escapeHTML(id)}')">Delete</button></td></tr>`;}).join("")||'<tr><td colspan="6" class="empty">No victims registered.</td></tr>';
+}
+function renderMapIncidents(){
+  const body=document.getElementById("mapIncidentBody");
+  body.innerHTML=incidents.map(i=>{const location=i.location||"",url="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(location);return `<tr><td>${escapeHTML(val(i,"title","incident_title","name")||"Incident")}</td><td>${escapeHTML(location||"-")}</td><td>${escapeHTML(i.priority||"-")}</td><td>${escapeHTML(val(i,"response_team","assigned_team","team","responder")||"Not Assigned")}</td><td><a class="btn btn-primary btn-small" style="text-decoration:none" href="${url}" target="_blank" rel="noopener">View Map</a></td></tr>`;}).join("")||'<tr><td colspan="5" class="empty">No incident locations available.</td></tr>';
+}
+function renderHistory(){
+  const body=document.getElementById("historyBody");
+  body.innerHTML=history.map(h=>`<tr><td>${escapeHTML(val(h,"id")||"-")}</td><td>${escapeHTML(val(h,"activity","action","event","description")||"-")}</td><td>${escapeHTML(val(h,"created_at","timestamp","date")||"-")}</td></tr>`).join("")||'<tr><td colspan="3" class="empty">No activity history found.</td></tr>';
+}
+async function runAction(label,fn){try{await fn();await loadAllData();}catch(e){alert(label+" failed: "+e.message);console.error(label,e);}}
+document.getElementById("incidentForm").addEventListener("submit",e=>{e.preventDefault();const data={incident_type:document.getElementById("incidentType").value,title:document.getElementById("incidentTitle").value.trim(),location:document.getElementById("incidentLocation").value.trim(),priority:document.getElementById("incidentPriority").value,status:document.getElementById("incidentStatus").value,response_team:document.getElementById("incidentResponseTeam").value,description:document.getElementById("incidentDescription").value.trim()};runAction("Add incident",async()=>{await postData(INCIDENT_API,data);e.target.reset();populateIncidentTeams();alert("Incident added successfully.");});});
+document.getElementById("teamForm").addEventListener("submit",e=>{e.preventDefault();const data={name:document.getElementById("teamName").value.trim(),role:document.getElementById("teamRole").value.trim(),phone:document.getElementById("teamPhone").value.trim(),status:document.getElementById("teamStatus").value};runAction("Add team member",async()=>{await postData(TEAM_API,data);e.target.reset();alert("Team member added successfully.");});});
+document.getElementById("resourceForm").addEventListener("submit",e=>{e.preventDefault();const data={action:"add",name:document.getElementById("resourceName").value.trim(),quantity:Number(document.getElementById("resourceQuantity").value)};runAction("Add resource",async()=>{await postData(RESOURCE_API,data);e.target.reset();document.getElementById("resourceQuantity").value=1;alert("Resource added successfully.");});});
+document.getElementById("victimForm").addEventListener("submit",e=>{e.preventDefault();const data={name:document.getElementById("victimName").value.trim(),location:document.getElementById("victimLocation").value.trim(),condition:document.getElementById("victimCondition").value,rescue_status:document.getElementById("victimRescueStatus").value};runAction("Register victim",async()=>{await postData(VICTIM_API,data);e.target.reset();alert("Victim registered successfully.");});});
+document.getElementById("alertForm").addEventListener("submit",async e=>{e.preventDefault();const type=document.getElementById("alertType").value,priority=document.getElementById("alertPriority").value,location=document.getElementById("alertLocation").value.trim(),message=document.getElementById("alertText").value.trim(),box=document.getElementById("alertResult");try{await postData(ALERT_API,{type,priority,location,message});box.textContent="Emergency alert saved.";box.classList.add("show");e.target.reset();await loadAllData();}catch(err){alert("Could not save alert: "+err.message);}});
+async function deleteIncident(id){if(id&&confirm("Delete this incident?"))await runAction("Delete incident",()=>deleteData(INCIDENT_API,id));}
+async function deleteTeamMember(id){if(id&&confirm("Delete this response team member?"))await runAction("Delete team member",()=>deleteData(TEAM_API,id));}
+async function changeResource(id,quantity){await runAction("Update resource",()=>postData(RESOURCE_API,{action:"update",id,quantity}));}
+async function deleteResource(id){if(id&&confirm("Delete this resource?"))await runAction("Delete resource",()=>deleteData(RESOURCE_API,id));}
+async function deleteVictim(id){if(id&&confirm("Delete this victim record?"))await runAction("Delete victim",()=>deleteData(VICTIM_API,id));}
+function filterTable(inputId,tableId){const filter=document.getElementById(inputId).value.toLowerCase();document.querySelectorAll("#"+tableId+" tbody tr").forEach(row=>row.style.display=row.textContent.toLowerCase().includes(filter)?"":"none");}
+function openGoogleMaps(){window.open("https://www.google.com/maps","_blank","noopener");}
+function showAlertMessage(box,text){box.textContent=text;box.classList.add("show");}
+async function sendQuickAlert(){const type=document.getElementById("quickAlertType").value,location=document.getElementById("quickAlertLocation").value.trim(),priority=document.getElementById("quickAlertPriority").value;if(!location){alert("Please enter the emergency location.");return;}try{await postData(ALERT_API,{type,location,priority,message:`${priority} ${type} emergency at ${location}`});showAlertMessage(document.getElementById("quickAlertMessage"),`${priority} alert saved for ${type} at ${location}.`);document.getElementById("quickAlertLocation").value="";await loadAllData();}catch(e){alert("Could not save alert: "+e.message);}}
+function csvDownload(filename,rows){if(!rows.length){alert("No data available to export.");return;}const csv=rows.map(row=>row.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n");const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
+function exportIncidentsCSV(){csvDownload("incident_report.csv",[["ID","Incident Type","Title","Location","Priority","Status","Response Team"],...incidents.map(i=>[val(i,"id","incident_id"),val(i,"incident_type","type"),val(i,"title","incident_title"),i.location,i.priority,i.status,val(i,"response_team","assigned_team","team","responder")])]);}
+function exportTeamCSV(){csvDownload("response_team_report.csv",[["ID","Name","Role","Phone","Status"],...team.map(t=>[val(t,"id","team_id"),val(t,"name","member_name"),val(t,"role","position"),val(t,"phone","mobile"),t.status])]);}
+function exportVictimsCSV(){csvDownload("victim_report.csv",[["ID","Name","Location","Condition","Rescue Status"],...victims.map(v=>[val(v,"id","victim_id"),val(v,"name","victim_name"),v.location,val(v,"condition","victim_condition"),val(v,"rescue_status","status")])]);}
+function logout(){if(confirm("Return to the login page?"))window.location.href="logout.php";}
+async function startDashboard(){
+  try{
+    const response=await fetch(SESSION_API,{headers:{"Accept":"application/json"},cache:"no-store"});
+    const session=await response.json();
+    if(!response.ok||!session.authenticated){window.location.replace("login.html");return;}
+    await loadAllData();
+  }catch(error){
+    showError("Unable to verify your sign-in. Refresh the page or sign in again.");
+    console.error("Session check failed:",error);
+  }
+}
+startDashboard();
+</script>
+</body>
+</html>
